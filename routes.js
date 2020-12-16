@@ -3,8 +3,8 @@ const app = express();
 const router = express.Router();
 const mongoose = require('mongoose');
 const UserSchema = mongoose.Schema({
-    first_name: String,
-    last_name: String,
+    firstName: String,
+    lastName: String,
     email: String,
     password: String
 });
@@ -20,8 +20,8 @@ let todoList = mongoose.model('todos', todoSchema);
 
 router.post('/api/user', (req, res) => {
     const newUser = userList({
-        first_name: req.body.first_name,
-        last_name: req.body.last_name,
+        firstName: req.body.firstName,
+        lastName: req.body.lastName,
         email: req.body.email,
         password: req.body.password
     })
