@@ -6,6 +6,7 @@ const config = require("config");
 const User = require("./Models/User");
 const app = express();
 const router = express.Router();
+require("dotenv/config");
 
 // const todoSchema = mongoose.Schema({
 //     text: String,
@@ -13,6 +14,26 @@ const router = express.Router();
 // })
 
 // let todoList = mongoose.model('todos', todoSchema);
+
+router.put("/api/change_password", async (req, res) => {
+  try {
+    const { email, newPassword } = req.body;
+    const hashedpassword = await bcrypt.hash(newPassword, 12);  
+    const user = await User.findOneAndUpdate(
+      { email },
+      {
+        $set: {
+          password: hashedpassword  
+        },
+      }
+    ).then(result => {
+      console.log('result', result);
+      res.status(201).send({data: result, message:"password updated"});
+    }).catch(err => console.log('err', err)) ;
+  } catch (e) {
+    res.status(500).send({ message: "Something went wrong" });
+  }
+});
 
 router.post("/api/login", async (req, res) => {
   try {
@@ -26,17 +47,22 @@ router.post("/api/login", async (req, res) => {
 
     const isMatch = await bcrypt.compare(password, user.password);
 
-    if (!ismatch) {
+    if (!isMatch) {
       return res
         .status(400)
         .json({ message: "Invalid username / password pair" });
     }
-
-    const token = jwt.sign({ userId: user.id }, config.get("jwt.Secret"), {
+    const token = jwt.sign({ userId: user.id }, process.env.jwtSecret, {
       expiresIn: "1h",
     });
 
-    res.json({ token, userId: user.id });
+    res.json({
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      token,
+      userId: user.id,
+    });
   } catch (e) {
     res.status(500).json({ message: "Something went wrong, please try again" });
   }
