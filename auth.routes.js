@@ -5,6 +5,8 @@ require("dotenv/config");
 
 router.put("/api/change_password", controller.changePassword);
 
+router.post("/api/check_email", controller.checkEmail);
+
 router.post("/api/login", controller.login);
 
 router.post("/api/register", controller.register);
