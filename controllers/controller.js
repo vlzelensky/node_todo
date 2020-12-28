@@ -1,10 +1,12 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../Models/User");
+const TodoList = require("../Models/Todolist");
+const TodoTask = require("../Models/Todotask");
 
 exports.checkEmail = async function (req, res) {
-    const { email } = req.body;
-  const user = await User.findOne({email});
+  const { email } = req.body;
+  const user = await User.findOne({ email });
   if (!user) {
     return res.status(400).json({ message: "User not found" });
   } else {
@@ -20,7 +22,7 @@ exports.changePassword = async function (req, res) {
       { email },
       {
         $set: {
-          password: hashedpassword
+          password: hashedpassword,
         },
       }
     )
@@ -59,7 +61,7 @@ exports.login = async function (req, res) {
       firstName: user.firstName,
       lastName: user.lastName,
       token,
-      userId: user.id
+      userId: user.id,
     });
   } catch (e) {
     res.status(500).json({ message: "Something went wrong, please try again" });
@@ -82,11 +84,34 @@ exports.register = async function (req, res) {
       firstName,
       lastName,
       email,
-      password: hashedpassword
+      password: hashedpassword,
     });
     await user.save();
     res.status(201).json({ message: "User created successfully" });
   } catch (e) {
     res.status(500).json({ message: "Something went wrong, try again" });
+  }
+};
+
+exports.saveTodoList = async function (req, res) {
+  try {
+    const { title, tasks } = req.body;
+
+    const todoList = TodoList({
+      title,
+    });
+    await todoList.save();
+    tasks.forEach((todoItem) => {
+      const todoTask = TodoTask({
+        text: todoItem.text,
+        checked: todoItem.checked,
+        id_list: todoList._id,
+      });
+      todoTask.save();
+    });
+    res.status(201).json({ message: "Todolist created successfully" });
+  } catch (e) {
+    res.status(500).json({ message: "Something went wrong, try again" });
+    console.log(e);
   }
 };
