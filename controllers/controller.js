@@ -3,6 +3,7 @@ const jwt = require("jsonwebtoken");
 const User = require("../Models/User");
 const TodoList = require("../Models/Todolist");
 const TodoTask = require("../Models/Todotask");
+const mongoose = require("mongoose");
 
 exports.checkEmail = async function (req, res) {
   const { email } = req.body;
@@ -118,20 +119,22 @@ exports.saveTodoList = async function (req, res) {
 
 exports.getTodoLists = async function (req, res) {
   try {
-      const lists = await TodoList.find();
-      const tasks = await TodoTask.find();
-      res.status(200).json({lists, tasks});
-  } catch(e) {
-    res.status(500).json ({ message: "Something went wrong, try again" });
-  }
-}
+    const lists = await TodoList.find().lean().exec();
 
-// exports.getTasks = async function (req, res) {
-//   try {
-//     const tasks = await TodoTask.find();
-//     console.log(tasks)
-//     res.status(200).json(tasks);
-//   } catch(e) {
-//     res.states(500).json({ message: "Something went wrong, try again"});
-//   }
-// }
+    await Promise.all(
+      lists.map(async (list) => {
+        const tasks = await TodoTask.find({
+          id_list: list._id
+        })
+          .limit(3)
+          .lean()
+          .exec();
+        list["tasks"] = tasks;
+      })
+    );
+    res.status(200).json(lists);
+  } catch (e) {
+    console.log(e);
+    res.status(500).json({ message: "Something went wrong, try again" });
+  }
+};
