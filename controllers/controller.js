@@ -115,3 +115,23 @@ exports.saveTodoList = async function (req, res) {
     console.log(e);
   }
 };
+
+exports.getTodoLists = async function (req, res) {
+  try {
+      const lists = await TodoList.find();
+      const tasks = await TodoTask.find();
+      res.status(200).json({lists, tasks});
+  } catch(e) {
+    res.status(500).json ({ message: "Something went wrong, try again" });
+  }
+}
+
+// exports.getTasks = async function (req, res) {
+//   try {
+//     const tasks = await TodoTask.find();
+//     console.log(tasks)
+//     res.status(200).json(tasks);
+//   } catch(e) {
+//     res.states(500).json({ message: "Something went wrong, try again"});
+//   }
+// }
