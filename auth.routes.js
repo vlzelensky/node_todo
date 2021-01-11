@@ -11,6 +11,8 @@ router.get("/api/todolist", controller.getTodoLists);
 
 router.post("/api/check_email", controller.checkEmail);
 
+router.get("/api/editlist/:id", controller.getEditList);
+
 router.post("/api/login", controller.login);
 
 router.post("/api/register", controller.register);

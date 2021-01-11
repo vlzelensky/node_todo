@@ -138,3 +138,14 @@ exports.getTodoLists = async function (req, res) {
     res.status(500).json({ message: "Something went wrong, try again" });
   }
 };
+
+
+exports.getEditList = async function (req, res) {
+  try {
+    const list = await TodoList.findOne({_id: req.params.id})
+    const tasks = await TodoTask.find({id_list: req.params.id})
+    res.status(200).json({list, tasks})
+  } catch (e) {
+    res.status(500).json({ message: "Something went wrong, try again"})
+  }
+}
