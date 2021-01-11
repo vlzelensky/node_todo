@@ -9,9 +9,9 @@ router.post("/api/todolist", controller.saveTodoList);
 
 router.get("/api/todolist", controller.getTodoLists);
 
-// router.get("/api/todolist", controller.getTasks);
-
 router.post("/api/check_email", controller.checkEmail);
+
+router.get("/api/editlist/:id", controller.getEditList);
 
 router.post("/api/login", controller.login);
 
