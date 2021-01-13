@@ -156,7 +156,7 @@ exports.editList = async function (req, res) {
       { _id },
       {
         $set: {
-          title
+          title,
         },
       }
     );
@@ -174,7 +174,28 @@ exports.editList = async function (req, res) {
     });
     res.status(201).json({ message: "TodoList updated successfully" });
   } catch (e) {
-    console.log(e);
+    res.status(500).json({ message: "Something went wrong, try again" });
+  }
+};
+
+exports.deleteList = async function (req, res) {
+  try {
+    const { id } = req.params;
+    console.log(id);
+    const deleteList = await TodoList.deleteOne({ _id: id });
+    const deleteListTasks = await TodoTask.deleteMany({ id_list: id });
+    res.status(200).json({ message: "TodoList deleted successfully" });
+  } catch (e) {
+    res.status(500).json({ message: "Something went wrong, try again" });
+  }
+};
+
+exports.deleteTask = async function (req, res) {
+  try {
+    const { id } = req.params;
+    const deleteTask = await TodoTask.deleteOne({ _id: id });
+    res.status(200).json({message: "Task deleted successfully"}) 
+  } catch (e) {
     res.status(500).json({ message: "Something went wrong, try again" });
   }
 };
