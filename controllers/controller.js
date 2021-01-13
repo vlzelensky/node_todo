@@ -151,9 +151,10 @@ exports.getEditList = async function (req, res) {
 
 exports.editList = async function (req, res) {
   try {
-    const tasks = req.body.tasks;
+    const { _id } = req.body.list;
+    const { tasks } = req.body;
     const newList = await TodoList.findOneAndUpdate(
-      { _id: req.body.list._id },
+      { _id },
       {
         $set: {
           title: req.body.list.title,
@@ -161,12 +162,13 @@ exports.editList = async function (req, res) {
       }
     );
     const newTasks = tasks.map(async (task) => {
+      const { _id, text, checked } = task;
       await TodoTask.findOneAndUpdate(
-        { _id: task._id },
+        { _id },
         {
           $set: {
-            text: task.text,
-            checked: task.checked,
+            text,
+            checked,
           },
         }
       );
