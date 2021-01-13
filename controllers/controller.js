@@ -151,13 +151,12 @@ exports.getEditList = async function (req, res) {
 
 exports.editList = async function (req, res) {
   try {
-    const { _id } = req.body.list;
-    const { tasks } = req.body;
+    const { _id, tasks, title } = req.body;
     const newList = await TodoList.findOneAndUpdate(
       { _id },
       {
         $set: {
-          title: req.body.list.title,
+          title
         },
       }
     );
