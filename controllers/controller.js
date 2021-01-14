@@ -181,7 +181,6 @@ exports.editList = async function (req, res) {
 exports.deleteList = async function (req, res) {
   try {
     const { id } = req.params;
-    console.log(id);
     const deleteList = await TodoList.deleteOne({ _id: id });
     const deleteListTasks = await TodoTask.deleteMany({ id_list: id });
     res.status(200).json({ message: "TodoList deleted successfully" });
