@@ -15,6 +15,10 @@ router.get("/api/editlist/:id", controller.getEditList);
 
 router.put("/api/editlist/:id", controller.editList);
 
+router.delete("/api/editlist/:id", controller.deleteList);
+
+router.delete("/api/deletetask/:id", controller.deleteTask);
+
 router.post("/api/login", controller.login);
 
 router.post("/api/register", controller.register);
