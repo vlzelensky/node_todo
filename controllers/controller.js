@@ -151,16 +151,16 @@ exports.getEditList = async function (req, res) {
 
 exports.editList = async function (req, res) {
   try {
-    const { _id, tasks, title } = req.body;
-    const newList = await TodoList.findOneAndUpdate(
-      { _id },
-      {
-        $set: {
-          title,
-        },
-      }
-    );
-    const newTasks = tasks.map(async (task) => {
+    const { _id, editing, editingTitle } = req.body;
+    // const newTitle = await TodoList.findOneAndUpdate(
+    //   { _id },
+    //   {
+    //     $set: {
+    //       title: editingTitle
+    //     },
+    //   }
+    // );
+    const newTasks = editing.map(async (task) => {
       const { _id, text, checked } = task;
       await TodoTask.findOneAndUpdate(
         { _id },
@@ -174,6 +174,7 @@ exports.editList = async function (req, res) {
     });
     res.status(201).json({ message: "TodoList updated successfully" });
   } catch (e) {
+    console.log(e)
     res.status(500).json({ message: "Something went wrong, try again" });
   }
 };
