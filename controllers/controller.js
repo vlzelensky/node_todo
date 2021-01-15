@@ -151,18 +151,18 @@ exports.getEditList = async function (req, res) {
 
 exports.editList = async function (req, res) {
   try {
-    const { _id, editing, editingTitle } = req.body;
-    // const newTitle = await TodoList.findOneAndUpdate(
-    //   { _id },
-    //   {
-    //     $set: {
-    //       title: editingTitle
-    //     },
-    //   }
-    // );
+    const { editing, editingTitle } = req.body;
+    const newTitle = await TodoList.findOneAndUpdate(
+      { _id: req.params.id },
+      {
+        $set: {
+          title: editingTitle,
+        },
+      }
+    );console.log(title)
     const newTasks = editing.map(async (task) => {
       const { _id, text, checked } = task;
-      await TodoTask.findOneAndUpdate(
+      const newTask = await TodoTask.findOneAndUpdate(
         { _id },
         {
           $set: {
@@ -174,7 +174,6 @@ exports.editList = async function (req, res) {
     });
     res.status(201).json({ message: "TodoList updated successfully" });
   } catch (e) {
-    console.log(e)
     res.status(500).json({ message: "Something went wrong, try again" });
   }
 };
@@ -194,7 +193,23 @@ exports.deleteTask = async function (req, res) {
   try {
     const { id } = req.params;
     const deleteTask = await TodoTask.deleteOne({ _id: id });
-    res.status(200).json({message: "Task deleted successfully"}) 
+    res.status(200).json({ message: "Task deleted successfully" });
+  } catch (e) {
+    res.status(500).json({ message: "Something went wrong, try again" });
+  }
+};
+
+exports.addNewTask = async function (req, res) {
+  try {
+    const { id_list, text, checked } = req.body;
+    const newTask = await TodoTask({
+      id_list,
+      text,
+      checked,
+    });
+    newTask.save();
+    console.log(newTask)
+    res.status(200).json({ message: "Task saved successfully" });
   } catch (e) {
     res.status(500).json({ message: "Something went wrong, try again" });
   }
