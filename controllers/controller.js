@@ -4,6 +4,7 @@ const User = require("../Models/User");
 const TodoList = require("../Models/Todolist");
 const TodoTask = require("../Models/Todotask");
 const mongoose = require("mongoose");
+const c = require("config");
 
 exports.checkEmail = async function (req, res) {
   const { email } = req.body;
@@ -11,7 +12,7 @@ exports.checkEmail = async function (req, res) {
   if (!user) {
     return res.status(400).json({ message: "User not found" });
   } else {
-    return res.status(201).json({ message: "User has been founted" });
+    return res.status(201).json({ message: "User has been founded" });
   }
 };
 
@@ -152,26 +153,31 @@ exports.getEditList = async function (req, res) {
 exports.editList = async function (req, res) {
   try {
     const { editing, editingTitle } = req.body;
-    const newTitle = await TodoList.findOneAndUpdate(
-      { _id: req.params.id },
-      {
-        $set: {
-          title: editingTitle,
-        },
-      }
-    );console.log(title)
-    const newTasks = editing.map(async (task) => {
-      const { _id, text, checked } = task;
-      const newTask = await TodoTask.findOneAndUpdate(
-        { _id },
+    if (editingTitle !== undefined) {
+      await TodoList.findOneAndUpdate(
+        { _id: req.params.id },
         {
           $set: {
-            text,
-            checked,
+            title: editingTitle,
           },
         }
       );
-    });
+    }
+    if (editing) {
+      editing.forEach(async (task) => {
+        const { _id, text, checked } = task;
+        await TodoTask.findOneAndUpdate(
+          { _id },
+          {
+            $set: {
+              text,
+              checked,
+            },
+          }
+        );
+      });
+    }
+
     res.status(201).json({ message: "TodoList updated successfully" });
   } catch (e) {
     res.status(500).json({ message: "Something went wrong, try again" });
@@ -214,3 +220,19 @@ exports.addNewTask = async function (req, res) {
     res.status(500).json({ message: "Something went wrong, try again" });
   }
 };
+
+exports.getUser = async function (req, res) {
+  const token = req.get("x-token")
+  if (!token) {
+    return res.status(400).json({ message: "token is not provided" })
+  }
+  try {
+    const data = jwt.verify(token, process.env.jwtSecret)
+    const user = await User.findOne({ _id: data.userId });
+    res.json({firstName: user.firstName, lastName: user.lastName})
+
+  } catch (e) {
+    res.status(500).json({ message: "Invalid token" });
+  }
+  console.log(data)
+}

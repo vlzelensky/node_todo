@@ -25,4 +25,6 @@ router.post("/api/login", controller.login);
 
 router.post("/api/register", controller.register);
 
+router.get("/api/user", controller.getUser);
+
 module.exports = router;
