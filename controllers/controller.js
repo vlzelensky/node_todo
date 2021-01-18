@@ -97,7 +97,6 @@ exports.register = async function (req, res) {
 
 exports.saveTodoList = async function (req, res) {
   const token = req.get("x-token");
-  console.log(token)
   try {
     const data = jwt.verify(token, process.env.jwtSecret);
     const { title, tasks } = req.body;
@@ -124,7 +123,6 @@ exports.saveTodoList = async function (req, res) {
 
 exports.getTodoLists = async function (req, res) {
   const token = req.get("x-token");
-  console.log(token)
   try {
     const data = jwt.verify(token, process.env.jwtSecret);
     const lists = await TodoList.find({ userId: data.userId }).lean().exec();
@@ -161,7 +159,6 @@ exports.editList = async function (req, res) {
   try {
     const { editing, editingTitle } = req.body;
     const tasks = Object.values(editing);
-    console.log(tasks)
     if (editingTitle !== undefined) {
       await TodoList.findOneAndUpdate(
         { _id: req.params.id },
@@ -173,7 +170,6 @@ exports.editList = async function (req, res) {
       );
     }
     if (tasks) {
-      console.log(tasks);
       tasks.forEach(async (task) => {
         const { _id, text, checked } = task;
         await TodoTask.findOneAndUpdate(
@@ -225,7 +221,6 @@ exports.addNewTask = async function (req, res) {
       checked,
     });
     newTask.save();
-    console.log(newTask);
     res.status(200).json({ message: "Task saved successfully" });
   } catch (e) {
     res.status(500).json({ message: "Something went wrong, try again" });
