@@ -96,10 +96,14 @@ exports.register = async function (req, res) {
 };
 
 exports.saveTodoList = async function (req, res) {
+  const token = req.get("x-token");
+  console.log(token)
   try {
+    const data = jwt.verify(token, process.env.jwtSecret);
     const { title, tasks } = req.body;
 
     const todoList = TodoList({
+      userId: data.userId,
       title,
     });
     await todoList.save();
@@ -119,8 +123,11 @@ exports.saveTodoList = async function (req, res) {
 };
 
 exports.getTodoLists = async function (req, res) {
+  const token = req.get("x-token");
+  console.log(token)
   try {
-    const lists = await TodoList.find().lean().exec();
+    const data = jwt.verify(token, process.env.jwtSecret);
+    const lists = await TodoList.find({ userId: data.userId }).lean().exec();
 
     await Promise.all(
       lists.map(async (list) => {
@@ -153,6 +160,8 @@ exports.getEditList = async function (req, res) {
 exports.editList = async function (req, res) {
   try {
     const { editing, editingTitle } = req.body;
+    const tasks = Object.values(editing);
+    console.log(tasks)
     if (editingTitle !== undefined) {
       await TodoList.findOneAndUpdate(
         { _id: req.params.id },
@@ -163,8 +172,9 @@ exports.editList = async function (req, res) {
         }
       );
     }
-    if (editing) {
-      editing.forEach(async (task) => {
+    if (tasks) {
+      console.log(tasks);
+      tasks.forEach(async (task) => {
         const { _id, text, checked } = task;
         await TodoTask.findOneAndUpdate(
           { _id },
@@ -180,6 +190,7 @@ exports.editList = async function (req, res) {
 
     res.status(201).json({ message: "TodoList updated successfully" });
   } catch (e) {
+    console.log(e);
     res.status(500).json({ message: "Something went wrong, try again" });
   }
 };
@@ -214,7 +225,7 @@ exports.addNewTask = async function (req, res) {
       checked,
     });
     newTask.save();
-    console.log(newTask)
+    console.log(newTask);
     res.status(200).json({ message: "Task saved successfully" });
   } catch (e) {
     res.status(500).json({ message: "Something went wrong, try again" });
@@ -222,17 +233,15 @@ exports.addNewTask = async function (req, res) {
 };
 
 exports.getUser = async function (req, res) {
-  const token = req.get("x-token")
+  const token = req.get("x-token");
   if (!token) {
-    return res.status(400).json({ message: "token is not provided" })
+    return res.status(400).json({ message: "token is not provided" });
   }
   try {
-    const data = jwt.verify(token, process.env.jwtSecret)
+    const data = jwt.verify(token, process.env.jwtSecret);
     const user = await User.findOne({ _id: data.userId });
-    res.json({firstName: user.firstName, lastName: user.lastName})
-
+    res.json({ firstName: user.firstName, lastName: user.lastName, userId: user.userId });
   } catch (e) {
     res.status(500).json({ message: "Invalid token" });
   }
-  console.log(data)
-}
+};
