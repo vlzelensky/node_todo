@@ -4,6 +4,7 @@ const User = require("../Models/User");
 const TodoList = require("../Models/Todolist");
 const TodoTask = require("../Models/Todotask");
 const mongoose = require("mongoose");
+const c = require("config");
 
 exports.checkEmail = async function (req, res) {
   const { email } = req.body;
@@ -11,7 +12,7 @@ exports.checkEmail = async function (req, res) {
   if (!user) {
     return res.status(400).json({ message: "User not found" });
   } else {
-    return res.status(201).json({ message: "User has been founted" });
+    return res.status(201).json({ message: "User has been founded" });
   }
 };
 
@@ -95,10 +96,13 @@ exports.register = async function (req, res) {
 };
 
 exports.saveTodoList = async function (req, res) {
+  const token = req.get("x-token");
   try {
+    const data = jwt.verify(token, process.env.jwtSecret);
     const { title, tasks } = req.body;
 
     const todoList = TodoList({
+      userId: data.userId,
       title,
     });
     await todoList.save();
@@ -118,8 +122,10 @@ exports.saveTodoList = async function (req, res) {
 };
 
 exports.getTodoLists = async function (req, res) {
+  const token = req.get("x-token");
   try {
-    const lists = await TodoList.find().lean().exec();
+    const data = jwt.verify(token, process.env.jwtSecret);
+    const lists = await TodoList.find({ userId: data.userId }).lean().exec();
 
     await Promise.all(
       lists.map(async (list) => {
@@ -151,30 +157,36 @@ exports.getEditList = async function (req, res) {
 
 exports.editList = async function (req, res) {
   try {
-    const { _id, editing, editingTitle } = req.body;
-    // const newTitle = await TodoList.findOneAndUpdate(
-    //   { _id },
-    //   {
-    //     $set: {
-    //       title: editingTitle
-    //     },
-    //   }
-    // );
-    const newTasks = editing.map(async (task) => {
-      const { _id, text, checked } = task;
-      await TodoTask.findOneAndUpdate(
-        { _id },
+    const { editing, editingTitle } = req.body;
+    const tasks = Object.values(editing);
+    if (editingTitle !== undefined) {
+      await TodoList.findOneAndUpdate(
+        { _id: req.params.id },
         {
           $set: {
-            text,
-            checked,
+            title: editingTitle,
           },
         }
       );
-    });
+    }
+    if (tasks) {
+      tasks.forEach(async (task) => {
+        const { _id, text, checked } = task;
+        await TodoTask.findOneAndUpdate(
+          { _id },
+          {
+            $set: {
+              text,
+              checked,
+            },
+          }
+        );
+      });
+    }
+
     res.status(201).json({ message: "TodoList updated successfully" });
   } catch (e) {
-    console.log(e)
+    console.log(e);
     res.status(500).json({ message: "Something went wrong, try again" });
   }
 };
@@ -194,8 +206,37 @@ exports.deleteTask = async function (req, res) {
   try {
     const { id } = req.params;
     const deleteTask = await TodoTask.deleteOne({ _id: id });
-    res.status(200).json({message: "Task deleted successfully"}) 
+    res.status(200).json({ message: "Task deleted successfully" });
   } catch (e) {
     res.status(500).json({ message: "Something went wrong, try again" });
+  }
+};
+
+exports.addNewTask = async function (req, res) {
+  try {
+    const { id_list, text, checked } = req.body;
+    const newTask = await TodoTask({
+      id_list,
+      text,
+      checked,
+    });
+    newTask.save();
+    res.status(200).json({ message: "Task saved successfully" });
+  } catch (e) {
+    res.status(500).json({ message: "Something went wrong, try again" });
+  }
+};
+
+exports.getUser = async function (req, res) {
+  const token = req.get("x-token");
+  if (!token) {
+    return res.status(400).json({ message: "token is not provided" });
+  }
+  try {
+    const data = jwt.verify(token, process.env.jwtSecret);
+    const user = await User.findOne({ _id: data.userId });
+    res.json({ firstName: user.firstName, lastName: user.lastName, userId: user.userId });
+  } catch (e) {
+    res.status(500).json({ message: "Invalid token" });
   }
 };

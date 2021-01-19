@@ -7,6 +7,8 @@ router.put("/api/change_password", controller.changePassword);
 
 router.post("/api/todolist", controller.saveTodoList);
 
+router.post("/api/tasks", controller.addNewTask);
+
 router.get("/api/todolist", controller.getTodoLists);
 
 router.post("/api/check_email", controller.checkEmail);
@@ -22,5 +24,7 @@ router.delete("/api/deletetask/:id", controller.deleteTask);
 router.post("/api/login", controller.login);
 
 router.post("/api/register", controller.register);
+
+router.get("/api/user", controller.getUser);
 
 module.exports = router;
