@@ -235,7 +235,7 @@ exports.getUser = async function (req, res) {
   try {
     const data = jwt.verify(token, process.env.jwtSecret);
     const user = await User.findOne({ _id: data.userId });
-    res.json({ firstName: user.firstName, lastName: user.lastName, userId: user.userId });
+    res.json({ firstName: user.firstName, lastName: user.lastName, userId: user._id, email: user.email });
   } catch (e) {
     res.status(500).json({ message: "Invalid token" });
   }
