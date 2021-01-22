@@ -160,7 +160,6 @@ exports.getEditList = async function (req, res) {
 exports.editList = async function (req, res) {
   try {
     const { editing, editingTitle } = req.body;
-    const tasks = Object.values(editing);
     if (editingTitle !== undefined) {
       await TodoList.findOneAndUpdate(
         { _id: req.params.id },
@@ -171,16 +170,22 @@ exports.editList = async function (req, res) {
         }
       );
     }
-    if (tasks) {
+    if (editing) {
+      const tasks = Object.values(editing);
       tasks.forEach(async (task) => {
-        const { _id, text, checked } = task;
+        let editingObject = {};
+        if (task.text !== undefined) {
+          editingObject.text = task.text;
+        }
+        if (task.checked !== undefined) {
+          editingObject.checked = task.checked;
+        }
+        console.log(editingObject);
+        const { _id } = task;
         await TodoTask.findOneAndUpdate(
           { _id },
           {
-            $set: {
-              text,
-              checked,
-            },
+            $set: editingObject,
           }
         );
       });
