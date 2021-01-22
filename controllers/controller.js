@@ -44,7 +44,9 @@ exports.login = async function (req, res) {
     const user = await User.findOne({ email });
 
     if (!user) {
-      return res.status(400).json({ message: "User not found" });
+      return res
+        .status(400)
+        .json({ message: "Invalid username / password pair" });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
@@ -235,8 +237,31 @@ exports.getUser = async function (req, res) {
   try {
     const data = jwt.verify(token, process.env.jwtSecret);
     const user = await User.findOne({ _id: data.userId });
-    res.json({ firstName: user.firstName, lastName: user.lastName, userId: user._id, email: user.email });
+    res.json({
+      firstName: user.firstName,
+      lastName: user.lastName,
+      userId: user._id,
+      email: user.email,
+    });
   } catch (e) {
     res.status(500).json({ message: "Invalid token" });
+  }
+};
+
+exports.editUser = async function (req, res) {
+  const token = req.get("x-token");
+  const { firstName, lastName, email, password } = req.body;
+  try {
+    const data = jwt.verify(token, process.env.jwtSecret);
+    const id = data.userId;
+    await User.findOneAndUpdate(
+      { _id: id },
+      {
+        $set: req.body,
+      }
+    );
+    res.json({ message: "successfully updated" });
+  } catch (e) {
+    res.status(500).json({ message: "Something went wrong" });
   }
 };

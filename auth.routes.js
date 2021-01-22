@@ -1,6 +1,6 @@
-const express = require('express')
+const express = require("express");
 const router = express.Router();
-const controller = require('./controllers/controller');
+const controller = require("./controllers/controller");
 require("dotenv/config");
 
 router.put("/api/change_password", controller.changePassword);
@@ -26,5 +26,7 @@ router.post("/api/login", controller.login);
 router.post("/api/register", controller.register);
 
 router.get("/api/user", controller.getUser);
+
+router.put("/api/user", controller.editUser);
 
 module.exports = router;
